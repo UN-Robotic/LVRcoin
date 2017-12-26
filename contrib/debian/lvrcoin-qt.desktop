@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=LVRcoin
+Comment=LVRcoin P2P Cryptocurrency
+Comment[fr]=LVRcoin, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=LVRcoin, eşten eşe kriptografik sanal para birimi
+Exec=LVRcoin-qt %u
+Terminal=false
+Type=Application
+Icon=LVRcoin128
+MimeType=x-scheme-handler/LVRcoin;
+Categories=Office;Finance;

@@ -1,0 +1,27 @@
+# /etc/conf.d/LVRcoind: config file for /etc/init.d/LVRcoind
+
+# Config file location
+#LVRcoinD_CONFIGFILE="/etc/LVRcoin/LVRcoin.conf"
+
+# What directory to write pidfile to?  (created and owned by $LVRcoinD_USER)
+#LVRcoinD_PIDDIR="/var/run/LVRcoind"
+
+# What filename to give the pidfile
+#LVRcoinD_PIDFILE="${LVRcoinD_PIDDIR}/LVRcoind.pid"
+
+# Where to write LVRcoind data (be mindful that the blockchain is large)
+#LVRcoinD_DATADIR="/var/lib/LVRcoind"
+
+# User and group to own LVRcoind process
+#LVRcoinD_USER="LVRcoin"
+#LVRcoinD_GROUP="LVRcoin"
+
+# Path to LVRcoind executable
+#LVRcoinD_BIN="/usr/bin/LVRcoind"
+
+# Nice value to run LVRcoind under
+#LVRcoinD_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+LVRcoinD_OPTS="-disablewallet"
+

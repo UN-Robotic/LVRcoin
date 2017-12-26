@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+#  LVRcoind The LVRcoin core server.
+#
+#
+# chkconfig: 345 80 20
+# description: LVRcoind
+# processname: LVRcoind
+#
+
+# Source function library.
+. /etc/init.d/functions
+
+# you can override defaults in /etc/sysconfig/LVRcoind, see below
+if [ -f /etc/sysconfig/LVRcoind ]; then
+        . /etc/sysconfig/LVRcoind
+fi
+
+RETVAL=0
+
+prog=LVRcoind
+# you can override the lockfile via LVRcoinD_LOCKFILE in /etc/sysconfig/LVRcoind
+lockfile=${LVRcoinD_LOCKFILE-/var/lock/subsys/LVRcoind}
+
+# LVRcoind defaults to /usr/bin/LVRcoind, override with LVRcoinD_BIN
+LVRcoind=${LVRcoinD_BIN-/usr/bin/LVRcoind}
+
+# LVRcoind opts default to -disablewallet, override with LVRcoinD_OPTS
+LVRcoind_opts=${LVRcoinD_OPTS--disablewallet}
+
+start() {
+    echo -n $"Starting $prog: "
+    daemon $DAEMONOPTS $LVRcoind $LVRcoind_opts
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch $lockfile
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    killproc $prog
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+    return $RETVAL
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status $prog
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    *)
+        echo "Usage: service $prog {start|stop|status|restart}"
+        exit 1
+        ;;
+esac

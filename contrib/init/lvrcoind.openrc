@@ -1,0 +1,88 @@
+#!/sbin/runscript
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/LVRcoin/.LVRcoin" ]; then
+	LVRcoinD_DEFAULT_DATADIR="/var/lib/LVRcoin/.LVRcoin"
+else
+	LVRcoinD_DEFAULT_DATADIR="/var/lib/LVRcoind"
+fi
+
+LVRcoinD_CONFIGFILE=${LVRcoinD_CONFIGFILE:-/etc/LVRcoin/LVRcoin.conf}
+LVRcoinD_PIDDIR=${LVRcoinD_PIDDIR:-/var/run/LVRcoind}
+LVRcoinD_PIDFILE=${LVRcoinD_PIDFILE:-${LVRcoinD_PIDDIR}/LVRcoind.pid}
+LVRcoinD_DATADIR=${LVRcoinD_DATADIR:-${LVRcoinD_DEFAULT_DATADIR}}
+LVRcoinD_USER=${LVRcoinD_USER:-${LVRcoin_USER:-LVRcoin}}
+LVRcoinD_GROUP=${LVRcoinD_GROUP:-LVRcoin}
+LVRcoinD_BIN=${LVRcoinD_BIN:-/usr/bin/LVRcoind}
+LVRcoinD_NICE=${LVRcoinD_NICE:-${NICELEVEL:-0}}
+LVRcoinD_OPTS="${LVRcoinD_OPTS:-${LVRcoin_OPTS}}"
+
+name="LVRcoin Core Daemon"
+description="LVRcoin cryptocurrency P2P network daemon"
+
+command="/usr/bin/LVRcoind"
+command_args="-pid=\"${LVRcoinD_PIDFILE}\" \
+		-conf=\"${LVRcoinD_CONFIGFILE}\" \
+		-datadir=\"${LVRcoinD_DATADIR}\" \
+		-daemon \
+		${LVRcoinD_OPTS}"
+
+required_files="${LVRcoinD_CONFIGFILE}"
+start_stop_daemon_args="-u ${LVRcoinD_USER} \
+			-N ${LVRcoinD_NICE} -w 2000"
+pidfile="${LVRcoinD_PIDFILE}"
+retry=60
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${LVRcoinD_USER}:${LVRcoinD_GROUP}" \
+	"${LVRcoinD_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${LVRcoinD_USER}:${LVRcoinD_GROUP}" \
+	"${LVRcoinD_PIDDIR}"
+
+	checkpath -f \
+	-o ${LVRcoinD_USER}:${LVRcoinD_GROUP} \
+	-m 0660 \
+	${LVRcoinD_CONFIGFILE}
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${LVRcoinD_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run LVRcoind."
+		eerror "The setting must appear in ${LVRcoinD_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following"
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is also recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"LVRcoin Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}
